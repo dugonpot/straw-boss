@@ -31,7 +31,14 @@ Team-mode work runs in a worktree this session owns:
 
    The returned top-level path must be the new worktree; a mismatch blocks this launch.
 2. Copy each declared `localFiles` entry from `<app_dir>/<path>` to the same path in the worktree with `cp -R`, keeping any destination that already exists. A missing entry stops this launch with its path and note unless that exact entry has `optional: true`. A `sensitive: true` entry is copied only under user authorization covering it. Report copied and skipped paths; file contents stay unread.
-3. Launch with the verified worktree as `cwd`, leaving `subagent`'s own `worktree` option unset.
+3. Register the worktree as a Herdr sub workspace under the app's primary workspace, first noting whether a workspace whose `worktree.checkout_path` is the app directory already exists in `herdr workspace list`:
+
+   ```bash
+   herdr worktree open --cwd "<app_dir>" --path "<app_dir>-<slug>" --label "<slug>" --no-focus
+   ```
+
+   Record the returned `workspace.workspace_id`. When no app workspace existed before, Herdr opens one as the group's primary; record its ID as created by this session. A failed open blocks this launch.
+4. Launch with the verified worktree as `cwd`, leaving `subagent`'s own `worktree` option unset. Grouped pane placement puts the worker in an `Agents` tab of the sub workspace, because its checkout is the longest match for that `cwd`.
 
 When parallel tasks target the same moving base, the worker refreshes through the app's merge or rebase workflow before pushing.
 
@@ -79,7 +86,7 @@ A dispatch is `done` only when every item below holds:
 
 A task under a shared checkpoint that meets item 1 is `delivered`, as [boss-say](../boss-say/SKILL.md#plan-and-schedule) defines; keep its worktree until the checkpoint task returns.
 
-Then update the originating ticket as [shipping-task](../shipping-task/SKILL.md#complete-the-lifecycle) directs, while the worktree still exists for a tracker that reads its commit there; remove a worktree this session created with `git -C "<app_dir>" worktree remove "<absolute-worktree-path>"`.
+Then update the originating ticket as [shipping-task](../shipping-task/SKILL.md#complete-the-lifecycle) directs, while the worktree still exists for a tracker that reads its commit there; remove a worktree this session created by closing its sub workspace with `herdr workspace close <workspace_id>`, then running `git -C "<app_dir>" worktree remove "<absolute-worktree-path>"`. Close an app primary workspace this session created once no linked worktree workspace of the app remains open in it; Herdr refuses to close a primary that still has one, and `--group` is never used to force it.
 
 Every result settles its todo item:
 
