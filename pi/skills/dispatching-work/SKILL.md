@@ -37,7 +37,7 @@ Team-mode work runs in a worktree this session owns:
    herdr worktree open --cwd "<app_dir>" --path "<app_dir>-<slug>" --label "<slug>" --no-focus
    ```
 
-   Record the returned `workspace.workspace_id`. When no app workspace existed before, Herdr opens one as the group's primary; record its ID as created by this session. A failed open blocks this launch.
+   Record the returned `workspace.workspace_id` as this session's sub workspace only when the result reports `already_open: false`; an already open workspace belongs to someone else and is never closed by this session. When no app workspace existed before, Herdr opens one as the group's primary; record its ID and its root pane ID from `herdr workspace list` and `herdr pane list` as created by this session. A failed open blocks this launch.
 4. Launch with the verified worktree as `cwd`, leaving `subagent`'s own `worktree` option unset. Grouped pane placement puts the worker in an `Agents` tab of the sub workspace, because its checkout is the longest match for that `cwd`.
 
 When parallel tasks target the same moving base, the worker refreshes through the app's merge or rebase workflow before pushing.
@@ -86,7 +86,7 @@ A dispatch is `done` only when every item below holds:
 
 A task under a shared checkpoint that meets item 1 is `delivered`, as [boss-say](../boss-say/SKILL.md#plan-and-schedule) defines; keep its worktree until the checkpoint task returns.
 
-Then update the originating ticket as [shipping-task](../shipping-task/SKILL.md#complete-the-lifecycle) directs, while the worktree still exists for a tracker that reads its commit there; remove a worktree this session created by closing its sub workspace with `herdr workspace close <workspace_id>`, then running `git -C "<app_dir>" worktree remove "<absolute-worktree-path>"`. Close an app primary workspace this session created once no linked worktree workspace of the app remains open in it; Herdr refuses to close a primary that still has one, and `--group` is never used to force it.
+Then update the originating ticket as [shipping-task](../shipping-task/SKILL.md#complete-the-lifecycle) directs, while the worktree still exists for a tracker that reads its commit there; remove a worktree this session created by closing its sub workspace with `herdr workspace close <workspace_id>`, then running `git -C "<app_dir>" worktree remove "<absolute-worktree-path>"`. Close an app primary workspace this session created only when `herdr pane list` shows that workspace holding nothing but its recorded root pane with no agent in it, because grouped placement puts other sessions' workers whose `cwd` is the app directory in its `Agents` tab; otherwise leave it open for the user. Herdr also refuses to close a primary that still has one, and `--group` is never used to force it.
 
 Every result settles its todo item:
 
