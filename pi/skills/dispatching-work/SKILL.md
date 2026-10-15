@@ -12,9 +12,9 @@ Workers are Pi sessions launched by `subagent` from `pi-herdr-agents`; it checks
 
 ### Resolve the worker setup
 
-Apply the role and thinking rules in the user instructions, then the work route in the root `AGENTS.md` of the repository holding the apps configuration, which may map a kind of task to a role.
+Apply the role and the solution-space or thinking rules in the user instructions, then the work route in the root `AGENTS.md` of the repository holding the apps configuration, which may map a kind of task to a role.
 Leave `model` unset unless the user chose one explicitly.
-State the selected role, thinking level, and reason.
+State the selected role, its solution space or thinking level, and the reason.
 
 ### Prepare the checkout
 
@@ -62,7 +62,7 @@ The brief ends with this worker contract:
 
 ### Launch
 
-Call `subagent` with `name` (`<task>-<role>[-n]`), `agent` (the role), `thinking`, `cwd`, and `task`.
+Call `subagent` with `name` (`<task>-<role>[-n]`), `agent` (the role), `solutionSpace` or `thinking` as the user instructions direct, `cwd`, and `task`.
 Track the dispatch as an in-progress todo item and report its name, role, and `cwd`.
 Read its pane with `herdr pane read <pane_id> --lines 15` once Pi has started; a worker held at a trust prompt gets the trust-parent-folder choice through `herdr pane send-keys`, because an unanswered prompt has left a worker idle for hours.
 
