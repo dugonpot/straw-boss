@@ -26,7 +26,7 @@ Every separate workroom is a Herdr pane, with the service, the current pane, and
 
 ## Pi host
 
-Pi runs the same workflow with Pi-native mechanics. `package.json` loads a separate Pi set of the six workflow skills from `pi/skills/` and two extensions from `pi/extensions/`, so the skills under `skills/` stay exactly as the other hosts read them; a Pi main agent launches Pi workers through `pi-herdr-agents`' `subagent`, receives each result as a message, and collects worker questions from `caller_ping`. Scheduling lives in the main agent's todo list and the `dispatch_control` ledger, so no Straw Boss script, instruction file, status file, or watcher runs on Pi. Pi dispatches stay inside Pi, and the other hosts keep their own. [Pi dispatching-work](../pi/skills/dispatching-work/SKILL.md) holds the mechanics.
+Pi runs a reduced workflow: `package.json` loads only [boss-say](../pi/skills/boss-say/SKILL.md) from `pi/skills/`, which defines how the main agent splits work, briefs `pi-herdr-agents` workers, relays their `caller_ping` questions, and reports. No Straw Boss script, extension, ledger, or watcher runs on Pi.
 
 ## Components
 

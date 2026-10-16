@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 PI = ROOT / "pi/skills"
 SHARED = ROOT / "skills"
-NAMES = ("boss-say", "resolving-app", "choosing-graph", "shipping-task", "reporting-to-user", "dispatching-work")
+NAMES = ("boss-say",)
 OTHER_HOST_MECHANICS = re.compile(
     r"CLAUDE_PLUGIN_ROOT|scripts/|plan\.json|\.straw-boss/plans|\.straw-boss/dispatch|awaiting-(?:main-agent|user-input|authorization)"
     r"|notifying-main-agent|peeking-work|contacting-orchestrators|bringing-coworker|claim-resource|/loop|ScheduleWakeup"
@@ -27,7 +27,7 @@ def bullets(path: Path, heading: str) -> list[str]:
 
 
 class PiSkillSetTests(unittest.TestCase):
-    def test_the_pi_set_has_the_six_workflow_skills(self) -> None:
+    def test_the_pi_set_is_boss_say(self) -> None:
         self.assertEqual({path.parent.name for path in PI.glob("*/SKILL.md")}, set(NAMES))
         for name in NAMES:
             with self.subTest(skill=name):
@@ -88,30 +88,6 @@ class PiSkillSetTests(unittest.TestCase):
             if any("\u4e00" <= character <= "\u9fff" for character in line)
         ]
         self.assertEqual(offenders, [])
-
-    def test_reporting_to_user_is_identical_in_both_sets(self) -> None:
-        self.assertEqual(
-            (PI / "reporting-to-user/SKILL.md").read_text(),
-            (SHARED / "reporting-to-user/SKILL.md").read_text(),
-        )
-
-    def test_shared_policy_terms_match_between_the_sets(self) -> None:
-        for heading in ("Coordination graphs", "Reality anchors"):
-            with self.subTest(section=heading):
-                self.assertEqual(
-                    bullets(PI / "choosing-graph/SKILL.md", heading),
-                    bullets(SHARED / "choosing-graph/SKILL.md", heading),
-                )
-        for phrase in ("solo-mode", "team-mode", "forbidDirectCommit: true", "gitWorkflowSkill",
-                       "Merge and pushes to another tracked branch require user authorization"):
-            with self.subTest(phrase=phrase):
-                self.assertIn(phrase, (PI / "shipping-task/SKILL.md").read_text())
-                self.assertIn(phrase, (SHARED / "shipping-task/SKILL.md").read_text())
-        for name in ("resolving-app", "boss-say"):
-            shared = (SHARED / name / "SKILL.md").read_text()
-            pi = (PI / name / "SKILL.md").read_text()
-            with self.subTest(skill=name):
-                self.assertEqual(shared.split("\n---\n", 1)[0], pi.split("\n---\n", 1)[0])
 
 
 if __name__ == "__main__":

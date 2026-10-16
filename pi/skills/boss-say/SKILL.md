@@ -3,50 +3,39 @@ name: boss-say
 description: Use when the user or prompt explicitly names boss say, or when work spans multiple managed apps.
 ---
 
-## Route the work
+# Boss Say
 
-Select the owning skill, resolve the target through [resolving-app](../resolving-app/SKILL.md), and apply [choosing-graph](../choosing-graph/SKILL.md).
-Load the owning skill when this session carries the work; a dispatched worker chooses its own method in its checkout.
-Carry bounded work here; use a separate workroom when app ownership, interaction, or continuity warrants one.
-Source-changing work follows the target's source-change workflow and [shipping-task](../shipping-task/SKILL.md).
+The main agent splits the work, briefs workers, answers for the user, and reports. Workers are Pi sessions launched with `subagent`; each result arrives as a message.
 
-For `boss say <skill> <work>`, invoke the matching skill with the work.
-Ask only when the name is ambiguous.
-A status query goes directly to [dispatching-work](../dispatching-work/SKILL.md#recover-and-hand-off).
+## Split the work
 
-## Receive an orchestrator handoff
+Find the owning app of each part in `.straw-boss/apps.json` at the git root (fields in the [apps configuration schema](../../../skills/init/references/apps-config-schema.md)); ask when a part matches no app or several.
 
-A handoff arrives as a prompt carrying a handoff ID and summary; `dispatch_control` has already moved the listed dispatches to this session.
-Route the summary's scope above, carrying its existing approval and scope exclusions.
-Recreate its undispatched tasks and dependencies as todo items, and read the moved dispatches with `dispatch_control` roll-call.
+- Carry bounded work in this session; dispatch only work that needs its own app checkout or runs in parallel.
+- One task is the largest piece one worker can finish end to end in one app.
+- Parallel writers to the same app each get their own git worktree, created before launch; a lone writer uses the app checkout.
+- A task that needs another task's output waits for it, and its brief names the artifact path.
+- Track every task as a todo item that names the tasks it waits on.
 
-## Plan and schedule
+## Brief a worker
 
-This skill owns task decomposition, dependency edges, and scheduling.
-Reuse the user's specified tasks and decisions; ask only about an unresolved scope or dependency choice.
-A task is the largest item one worker can own end to end in one resolved app.
-A dependency carries the prerequisite's exact artifact path in both briefs when output is required.
+The `task` brief, in English, carries:
 
-Every task is a todo item, and an undispatched task's item names the tasks it depends on.
-Name each task's anchor here, which settles [where its checkpoint runs](../choosing-graph/SKILL.md#reality-anchors).
-Every group whose checkpoint is shared gets one checkpoint task depending on the tasks it covers, and those tasks dispatch with their checkpoint marked shared.
-A checkpoint task becomes ready when every covered task is `delivered`: its result satisfies [Wrap up](../dispatching-work/SKILL.md#wrap-up) item 1 and it waits only on this checkpoint.
-Correctness and contract findings return as fix tasks, and each covered change-set takes its [disposition](../choosing-graph/SKILL.md#review-checkpoint) from that one result.
-Resolve source-changing items' lifecycle modes through [Select the mode](../shipping-task/SKILL.md#select-the-mode), reusing a batch-wide answer where applicable.
+- the requirement: the current symptom and the required behavior;
+- the Reality anchor that observes the result;
+- the user's authorizations and exclusions, quoted.
 
-Use the invocation's concurrency cap or documented project policy; otherwise use 4.
-Reduce it for observed contention and report the reason.
-Incompatible shared-checkout writers remain queued.
+Leave the cause, the code location, and the app's conventions to the worker, because a guessed cause binds it to the guess. End the brief with: "When you need a decision these authorizations do not cover, call `caller_ping` and stop."
 
-On entry and each delivered event:
+## Talk with workers and the user
 
-1. Handle it through [dispatching-work](../dispatching-work/SKILL.md#handle-events).
-2. Launch at most `cap - in-flight` ready tasks in the same turn through [dispatching-work](../dispatching-work/SKILL.md#launch-a-dispatch). A worker waiting on a user decision still holds its slot.
-3. Report the coordination delta. If every in-flight task is waiting, identify the blocker and next event.
+- Collect every pending `caller_ping`, ask the user all of them in one `ask_user` round with a recommendation each, then continue each worker with `subagent_resume` carrying its answer.
+- Check each result against its brief before marking the task done; a result that misses the brief becomes a fix task.
+- A change to a shared contract, permission data, or a migration gets one fresh-context `reviewer` before merge, because self-review has missed findings there.
+- Merging into a shared branch or deploying needs the user's authorization for that target.
 
-A failed or cancelled prerequisite leaves its dependents blocked.
-Report the blocked tasks and resolve their next action with the user; only `done` satisfies a dependency, except that `delivered` satisfies a checkpoint task's dependency on the tasks it covers.
-A retry gets a fresh dispatch.
+## Report
 
-**Complete when:** every item is terminal and cleaned up, or has a recorded blocker and next event.
-Report outcomes across the whole round through [reporting-to-user](../reporting-to-user/SKILL.md).
+Lead with what landed and its commit or MR. Then list what failed or is blocked, what was left out, and the decisions the user owns, asking those together through `ask_user`.
+
+**Complete when:** every task is done, or blocked with its reason reported, and its worktree is removed.

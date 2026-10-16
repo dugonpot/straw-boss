@@ -9,8 +9,8 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent.parent
-PI_SKILLS = {"boss-say", "resolving-app", "choosing-graph", "shipping-task", "reporting-to-user", "dispatching-work"}
-PI_EXTENSIONS = {"dispatch-recovery.ts", "pane-balance.ts"}
+PI_SKILLS = {"boss-say"}
+PI_EXTENSIONS: set[str] = set()
 RESOLVE = """
 const [managerModule, settingsModule, root, agentDir] = process.argv.slice(1);
 const { DefaultPackageManager } = await import(managerModule);
@@ -41,13 +41,13 @@ class PiPackageManifestTests(unittest.TestCase):
     def test_manifest_lists_the_pi_host_resources(self) -> None:
         manifest = json.loads((ROOT / "package.json").read_text())["pi"]
         skills = {Path(entry).name for entry in manifest["skills"]}
-        extensions = {Path(entry).name for entry in manifest["extensions"]}
+        extensions = {Path(entry).name for entry in manifest.get("extensions", [])}
         self.assertEqual(skills, PI_SKILLS)
         self.assertEqual(extensions, PI_EXTENSIONS)
         for entry in manifest["skills"]:
             self.assertTrue(entry.startswith("./pi/skills/"), entry)
             self.assertTrue((ROOT / entry / "SKILL.md").is_file(), entry)
-        for entry in manifest["extensions"]:
+        for entry in manifest.get("extensions", []):
             self.assertTrue((ROOT / entry).is_file(), entry)
 
     def test_package_version_matches_the_plugin_manifests(self) -> None:

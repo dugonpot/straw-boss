@@ -1,22 +1,15 @@
 {
   "name": "straw-boss",
-  "version": "0.31.7",
+  "version": "0.32.0",
   "private": true,
-  "description": "Straw Boss workflow for Pi: route work, dispatch app-rooted Pi workers through pi-herdr-agents, and carry the git lifecycle.",
+  "description": "Straw Boss workflow for Pi: split work across managed apps, brief pi-herdr-agents workers, and report back.",
   "license": "MIT",
-  "keywords": ["pi-package"],
+  "keywords": [
+    "pi-package"
+  ],
   "pi": {
-    "extensions": [
-      "./pi/extensions/dispatch-recovery.ts",
-      "./pi/extensions/pane-balance.ts"
-    ],
     "skills": [
-      "./pi/skills/boss-say",
-      "./pi/skills/resolving-app",
-      "./pi/skills/choosing-graph",
-      "./pi/skills/shipping-task",
-      "./pi/skills/reporting-to-user",
-      "./pi/skills/dispatching-work"
+      "./pi/skills/boss-say"
     ]
   }
 }

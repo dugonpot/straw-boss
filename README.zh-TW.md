@@ -92,7 +92,7 @@ agy plugin install wayne930242/straw-boss
 pi install git:github.com/wayne930242/straw-boss
 ```
 
-Pi 會載入 `boss-say`、`resolving-app`、`choosing-graph`、`shipping-task`、`reporting-to-user`、`dispatching-work` 與 `dispatch_control` extension。Pi 主 agent 沿用同一套工作流，透過 `pi-herdr-agents` 派 Pi worker，不執行內附的 Python 腳本；worker 的 model 取自你 `pi-herdr-agents` 設定裡各角色的 model。Pi 的 skill 是 `pi/skills/` 下獨立的一套，Claude Code、Codex 與 Antigravity 的 skill 不受影響。細節見 [Pi dispatching-work](pi/skills/dispatching-work/SKILL.md)。
+Pi 只載入一個 skill：[boss-say](pi/skills/boss-say/SKILL.md)。它把工作依 app 分工、交辦給 `pi-herdr-agents` 派出的 Pi worker、替使用者收齊 worker 的問題，最後回報；不執行任何內附腳本，`skills/` 下 Claude Code、Codex 與 Antigravity 的 skill 不受影響。
 
 單一 app 的話 `init` 只是加分，裝好 plugin 就能直接用 `boss-say`。檢查 Herdr、設定 `forbidDirectCommit`/`localFiles` 這類選項、或設定 monorepo 多個 app，才需要跑。
 
