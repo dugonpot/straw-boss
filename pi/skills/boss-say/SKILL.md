@@ -9,7 +9,7 @@ The main agent splits the work, briefs workers, answers for the user, and report
 
 ## Split the work
 
-Find the owning app of each part in `.straw-boss/apps.json` at the git root (fields in the [apps configuration schema](../../../skills/init/references/apps-config-schema.md)); ask when a part matches no app or several.
+Find the owning app of each part in the [apps configuration](references/apps-config.md); ask when a part matches no app or several.
 
 - Carry bounded work in this session; dispatch only work that needs its own app checkout or runs in parallel.
 - One task is the largest piece one worker can finish end to end in one app.
