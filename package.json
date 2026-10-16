@@ -1,6 +1,6 @@
 {
   "name": "straw-boss",
-  "version": "0.32.2",
+  "version": "0.32.3",
   "private": true,
   "description": "Straw Boss workflow for Pi: split work across managed apps, brief pi-herdr-agents workers, and report back.",
   "license": "MIT",
