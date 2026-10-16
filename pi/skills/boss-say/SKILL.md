@@ -33,6 +33,8 @@ Leave the cause, the code location, and the app's conventions to the worker, bec
 - Check each result against its brief before marking the task done; a result that misses the brief becomes a fix task.
 - A change to a shared contract, permission data, or a migration gets one fresh-context `reviewer` before merge, because self-review has missed findings there.
 - Merging into a shared branch or deploying needs the user's authorization for that target.
+- To broadcast to every other session (for example, the user is going to rest), send once to each and skip yourself; a `subagent-chat-*` name can be a main session, so do not filter by name:
+  `cli=~/.pi/agent/npm/node_modules/pi-intercom/cli.mjs; node $cli list --json | jq -r --arg me "$PI_SESSION_ID" '.sessions[] | select(.id != $me) | .id' | while read -r id; do node $cli send --to "$id" --text "<message>"; done`
 
 ## Report
 
