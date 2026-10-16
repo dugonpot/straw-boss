@@ -629,7 +629,7 @@ class CodexPlanOrchestrationTests(unittest.TestCase):
         self,
     ) -> None:
         """`wrap-up-task.py --app <app> --slug <slug>` (no --plan/--task-id) is
-        the bare form dispatch-mechanics.md's "Closing an instruction" shows,
+        the bare form dispatching-work's "Wrap up" shows,
         with no hint that a plan task needs more. For a plan-linked dispatch
         this must resolve plan_id/task_id from the instruction payload the
         same way report-task-status.py's resolve_instruction_status_path

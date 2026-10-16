@@ -512,15 +512,16 @@ class DispatchedAgentLifecycleContractTests(DispatchedAgentLifecycleFixture, uni
     def test_task_authoring_leaves_work_definition_to_worker_and_user(self) -> None:
         source = (ROOT / "skills/dispatching-work/SKILL.md").read_text()
         brief = source.partition("## Write the brief")[2].partition("\n## ")[0]
-        for requirement in ("user requirement", "requested outcome", "who exercises it",
-                            "place and motive", "Target-app context discovery",
+        for requirement in ("current symptom and required behavior", "who exercises it",
+                            "place and motive", "stay with the worker",
                             "verification method inside that anchor"):
             self.assertIn(requirement, brief)
         # A brief the worker cannot read in one pass is what an open-ended
         # "carry the available facts" line produced; the count is the rule.
         carried = [line for line in brief.splitlines() if line.startswith("- **")]
         self.assertEqual(len(carried), 3, carried)
-        self.assertIn("generated contract supplies lifecycle", source)
+        mechanics = (ROOT / "skills/dispatching-work/references/dispatch-mechanics.md").read_text()
+        self.assertIn("the brief carries no communication prose", mechanics)
         shipping = (ROOT / "skills/shipping-task/SKILL.md").read_text()
         self.assertIn("../dispatching-work/SKILL.md", shipping)
 
@@ -543,7 +544,7 @@ class DispatchedAgentLifecycleContractTests(DispatchedAgentLifecycleFixture, uni
         dispatch = (ROOT / "skills/dispatching-work/SKILL.md").read_text()
         mechanics = (ROOT / "skills/dispatching-work/references/dispatch-mechanics.md").read_text()
         self.assertIn("local provider configuration and the user's model preferences", init)
-        self.assertIn("references/dispatch-mechanics.md#resolve-mode-and-work-route", dispatch)
+        self.assertIn("references/dispatch-mechanics.md#resolve-the-worker-setup", dispatch)
         for flag in ("--agent-profile", "--agent-model", "--agent-effort", "--advisor-model"):
             self.assertIn(flag, mechanics)
         # Assert the rule, not one provider's name in it: this line went stale
@@ -560,7 +561,7 @@ class DispatchedAgentLifecycleContractTests(DispatchedAgentLifecycleFixture, uni
     def test_dispatch_brief_leaves_target_context_discovery_to_worker(self) -> None:
         dispatch = (ROOT / "skills/dispatching-work/SKILL.md").read_text()
         contract = (ROOT / "scripts/straw_boss/dispatch/state.py").read_text()
-        self.assertIn("Target-app context discovery and work decisions stay with the worker", dispatch)
+        self.assertIn("work decisions stay with the worker", dispatch)
         self.assertIn("Investigate this working directory yourself", " ".join(contract.split()))
         for skill in ("boss-say", "shipping-task"):
             source = (ROOT / "skills" / skill / "SKILL.md").read_text()
@@ -581,7 +582,7 @@ class DispatchedAgentLifecycleContractTests(DispatchedAgentLifecycleFixture, uni
             self.assertRegex(source, r"verification method[^.]{0,60}anchor")
         dispatch = (ROOT / "skills/dispatching-work/SKILL.md").read_text()
         self.assertIn("worker and user choose the verification method inside that anchor", dispatch)
-        self.assertIn("Route a work decision to the user", dispatch)
+        self.assertIn("route a work decision to the user", dispatch)
 
     def test_dispatch_guidance_never_creates_or_closes_worker_tabs(self) -> None:
         sources = [
@@ -1108,51 +1109,30 @@ class DispatchedAgentLifecycleContractTests(DispatchedAgentLifecycleFixture, uni
 
         normalized = " ".join(injected.replace("`", "").split())
         for boundary in (
-            "Use the smallest sufficient loop",
             "Run ADAAV silently",
             "specification, design, implementation, and the verification method",
-            "inside that anchor",
-            "Once work is dispatched",
-            "Keep the lifecycle event-driven",
-            "A dispatch reports itself",
-            "Track each dispatch as a harness-native todo item",
-            "checked off when it turns terminal",
-            "spend the time between events on other coordination or on the user's conversation",
-            "when observed evidence and its recorded state actually disagree, or when the user asks",
-            "Keep user interaction compact",
-            "current coordination delta",
+            "inside the reality anchor",
+            "track each as a todo item until terminal",
+            "act on each persisted status event",
+            "use peeking-work only when evidence and recorded state disagree or the user asks",
+            "Report only the coordination delta",
+            "reporting-to-user",
+            "Ask all pending user-owned decisions together through the "
             "harness-native ask-question interface",
-            "a mid-flight reply -- checkpoint release, dispatch acknowledgement, "
-            "answer to a user question -- follows the same rule",
-            "Gather every pending user-owned decision, this round's and any still "
-            "open from an earlier one, and ask all of them together, each with "
-            "its context, options, and a recommendation, using as many calls to "
-            "the harness-native ask-question interface as its per-call question "
-            "limit requires",
+            "each with context, options, and a recommendation",
+            "handoff-orchestrator",
+            "Send a worker only user direction, a verified cross-task fact, "
+            "or a coordinator action result",
+            "A conflict goes to the user",
+            "authorization stays with the user",
         ):
             self.assertIn(boundary, normalized)
         self.assertEqual(normalized.count("Run ADAAV silently"), 1)
 
-        # A rule states what to do so the outcome follows on its own; it does
-        # not also restate that outcome as a separate prohibition sentence.
-        self.assertNotIn("Every user-owned decision belongs inside that ask", normalized)
-
-        # The complaint this budget guards: the stance injected at every
-        # main-agent session start had grown to 2,373 characters of restated
-        # rules. Keep the trim, or restate a rule somewhere it is not already
-        # stated and this fails. The budget buys one line per coordination rule
-        # a main agent actually operates -- 1,800 to 1,900 when orchestrator
-        # registration became one of them, 1,900 to 2,400 when deleting
-        # docs/roles.md made this the only execution-time home for the naming
-        # rule and the dispatched-agent boundary, and ADAAV stopped being an
-        # acronym with no definition anywhere a session could reach, and 2,400
-        # to 2,700 when the one-at-a-time user-decision rule was replaced by
-        # gathering every pending decision -- new and carried over -- into one
-        # ask together, and 2,700 to 2,850 when mirroring each dispatch into the
-        # harness-native todo list gave the user a visible progress view. The
-        # each-rule-stated-once assertions above stay the guard against
-        # restatement buying that room back.
-        self.assertLessEqual(len(injected), 2850, injected)
+        # The stance is injected at every main-agent session start, so it
+        # carries only rules a main agent cannot get elsewhere. Keep it small;
+        # the each-rule-stated-once test guards against restating a rule.
+        self.assertLessEqual(len(injected), 1500, injected)
 
     def test_control_message_preserves_the_exact_slash_command(self) -> None:
         instruction_path, _ = self.write_dispatch("claude")

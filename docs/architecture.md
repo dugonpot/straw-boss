@@ -106,4 +106,4 @@ Merge, and a push landing outside the task's own feature branch (a monorepo-root
 
 Commit is free — the agent commits on its own as it goes, on either lifecycle shape. So is pushing the task's own feature branch (opening/updating an MR/PR against it): the branch was already implicitly authorized when the main agent created it for this task, so the agent pushes on its own and reports it as a non-blocking FYI, then keeps working — never a stop. `forbidDirectCommit` is the one remaining gate on solo-mode's direct commit to a shared base branch. The lifecycle owner updates an originating tracker ticket when its task's lifecycle is complete.
 
-See `skills/dispatching-work/references/` for the exact mechanics (dispatch, plan, cross-session coordination) — this document covers the *why*, those cover the *how*.
+See `skills/dispatching-work/references/` for the exact mechanics (dispatch, plan, shared-resource coordination) — this document covers the *why*, those cover the *how*.

@@ -184,7 +184,7 @@ class SkillInstructionQualityTests(unittest.TestCase):
             "specification, design, implementation, and the verification method",
             "awaiting-main-agent",
             "conflict",
-            "authorization",
+            "authorization stays with the user",
             "peeking-work",
         ):
             self.assertEqual(stance.count(phrase), 1, phrase)
@@ -457,8 +457,8 @@ class SkillInstructionQualityTests(unittest.TestCase):
         self.assertIn("when the user asks or observed evidence disagrees", boss)
         self.assertIn("Unchanged waiting stays quiet", boss)
         self.assertIn("Persisted status drives the lifecycle", dispatch)
-        self.assertIn("retain the task and its slot", dispatch)
-        self.assertIn("slot accounting and task status stay as recorded", dispatch)
+        self.assertIn("Retain the task and its slot", dispatch)
+        self.assertIn("status stays as recorded", dispatch)
         self.assertLess(peek.index("status and the recent entries"), peek.index("herdr agent read"))
         self.assertIn("If these answer the question, report that result", peek)
         self.assertIn("../dispatching-work/SKILL.md#handle-events", peek)
@@ -472,11 +472,11 @@ class SkillInstructionQualityTests(unittest.TestCase):
             self.assertNotIn("scripts/wrap-up-task.py", source, path)
         dispatch = normalized(ROOT / "skills/dispatching-work/SKILL.md")
         self.assertLess(dispatch.index("review checkpoint"), dispatch.index("wrap-up-task.py"))
-        self.assertLess(dispatch.index("Release every remaining lock"), dispatch.index("wrap-up-task.py"))
+        self.assertLess(dispatch.index("release every remaining lock"), dispatch.index("wrap-up-task.py"))
         self.assertIn("same-task continuation", dispatch)
         self.assertIn("Require terminal status", dispatch)
-        self.assertIn("pending instruction that never launched", dispatch)
-        self.assertIn("coordinator pane and shared tab remain open", dispatch)
+        self.assertIn("never-launched instruction needs no status", dispatch)
+        self.assertIn("coordinator pane and shared tab stay open", dispatch)
 
     def test_review_policy_reuses_disposition_for_the_completed_change(self) -> None:
         graph = normalized(ROOT / "skills/choosing-graph/SKILL.md")
@@ -495,7 +495,7 @@ class SkillInstructionQualityTests(unittest.TestCase):
         self.assertIn("pane closure alone establishes only reachability", mechanics)
         self.assertIn("refuses a reachable worker or an existing terminal status", mechanics)
         self.assertIn("both the main agent's dispatch-time port claim and any worker-held lock", shared)
-        self.assertIn("done, failed, and cancelled", shared)
+        self.assertIn("for done, failed, and cancelled", shared)
         self.assertIn("before archiving", shared)
         self.assertIn("expiry alone does not establish that its process stopped", shared)
         self.assertIn("one user account on one machine", shared)

@@ -6,8 +6,7 @@
 """Resolve a dispatched agent's `awaiting-main-agent` checkpoint: deliver
 the main agent's reply and record the resolution, atomically.
 
-See skills/dispatching-work/references/plan-mechanics.md's "Main-agent-
-action checkpoints". Only targets `mode: herdr-pane`; herdr provides the
+See skills/dispatching-work/SKILL.md's "Handle events". Only targets `mode: herdr-pane`; herdr provides the
 provider-neutral live addressing used for both supported agent kinds.
 
 It sends a short delta plus optional references through the shared

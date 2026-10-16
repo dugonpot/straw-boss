@@ -66,8 +66,8 @@ def wrap_up(app: str, slug: str, plan_slug: str | None, task_id: str | None) -> 
         # The instruction itself already knows whether it's a plan task --
         # report-task-status.py's resolve_instruction_status_path resolves the
         # same way from the same fields. Without this, a caller that only has
-        # --app/--slug in hand (e.g. dispatch-mechanics.md's "Closing an
-        # instruction" shows the bare call with no flags) would fall through
+        # --app/--slug in hand (e.g. the bare call SKILL.md's "Wrap up"
+        # shows with only --app/--slug) would fall through
         # to the standalone branch below for a plan-linked dispatch and look
         # for a sibling status file it never writes.
         payload_plan_id = payload.get("plan_id")

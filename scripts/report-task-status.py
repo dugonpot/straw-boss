@@ -40,8 +40,8 @@ exclusive:
 --status cancelled is the one exception to "given to the task": the main
 agent calls this itself, for a task it is ending because the dispatch
 was wrong, not because the task reported on itself (see
-skills/dispatching-work/references/cross-session-coordination.md's
-Cancel section) -- a dispatched task never reports its own cancellation,
+skills/dispatching-work/references/dispatch-mechanics.md's
+"Redirect, cancel, and repair") -- a dispatched task never reports its own cancellation,
 since it never sees this happen.
 """
 

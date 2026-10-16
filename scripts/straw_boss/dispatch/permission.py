@@ -35,7 +35,8 @@ PERMISSION_FLAGS: dict[str, tuple[str, ...]] = {
     "antigravity": ("--dangerously-skip-permissions", "--mode", "--sandbox"),
 }
 
-# skills/dispatching-work/references/dispatch-mechanics.md's "Permission mapping".
+# The launcher applies this table; dispatch-mechanics.md's "Resolve the worker
+# setup" states the rule it implements.
 # A kind absent from a tier has no documented flag: the launcher leaves it at the
 # provider default, which is never more permissive than the tier being mirrored.
 TIER_FLAGS: dict[str, dict[str, tuple[str, ...]]] = {

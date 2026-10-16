@@ -278,7 +278,7 @@ class ContextRenewalTests(DispatchedAgentLifecycleFixture, unittest.TestCase):
         renewed = self.hook("orchestrator-priming.py", payload, HERDR_PANE_ID="p1")
         self.assertIn("Next action: run the suite.", renewed.stdout)
         self.assertIn("standalone-worker", renewed.stdout)
-        self.assertNotIn("Use the smallest sufficient loop", renewed.stdout)
+        self.assertNotIn("Run ADAAV silently", renewed.stdout)
         self.assertEqual(json.loads(path.read_text())["consumed_by"], "new-session")
 
         # "new-session" confirms by reaching its own Stop below the threshold,
@@ -386,7 +386,7 @@ class ContextRenewalTests(DispatchedAgentLifecycleFixture, unittest.TestCase):
 
     def test_clear_without_a_record_primes_as_today(self) -> None:
         result = self.hook("orchestrator-priming.py", {"session_id": "fresh", "source": "clear"}, HERDR_PANE_ID="p1")
-        self.assertIn("Use the smallest sufficient loop", " ".join(result.stdout.replace("`", "").split()))
+        self.assertIn("Run ADAAV silently", " ".join(result.stdout.replace("`", "").split()))
         self.assertNotIn("Context renewal", result.stdout)
 
     def renewal_env(self, pane: str) -> dict[str, str]:
@@ -419,7 +419,7 @@ class ContextRenewalTests(DispatchedAgentLifecycleFixture, unittest.TestCase):
             "orchestrator-priming.py", {"session_id": "renewed-main", "source": "clear"},
             **self.renewal_env("main-pane"),
         )
-        self.assertIn("Use the smallest sufficient loop", " ".join(result.stdout.replace("`", "").split()))
+        self.assertIn("Run ADAAV silently", " ".join(result.stdout.replace("`", "").split()))
         self.assertIn(str(instruction_path), result.stdout)
         adopted = json.loads(instruction_path.read_text())
         self.assertEqual(adopted["main_agent_session_id"], "renewed-main")
@@ -451,7 +451,7 @@ class ContextRenewalTests(DispatchedAgentLifecycleFixture, unittest.TestCase):
             **self.renewal_env("worker-pane"),
         )
         self.assertIn("report-task-status.py", result.stdout)
-        self.assertNotIn("Use the smallest sufficient loop", " ".join(result.stdout.replace("`", "").split()))
+        self.assertNotIn("Run ADAAV silently", " ".join(result.stdout.replace("`", "").split()))
         self.assertEqual(json.loads(mine.read_text())["session_id"], "renewed-worker")
         self.assertEqual(json.loads(mine.read_text())["worker_adoptions"][-1]["before"]["session_id"], "worker-session")
         self.assertEqual(json.loads(other.read_text())["session_id"], "worker-session")

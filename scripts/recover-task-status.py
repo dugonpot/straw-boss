@@ -6,8 +6,8 @@
 """Recover a dispatched task's own terminal status when its worker cannot
 self-report: its pane already closed, or it is live but its report is refused.
 
-See skills/dispatching-work/SKILL.md's "Branch: Wrap up an instruction" and
-references/dispatch-mechanics.md's "Closing an instruction". Normal order
+See skills/dispatching-work/SKILL.md's "Wrap up" and
+references/dispatch-mechanics.md's "Recover a closed worker". Normal order
 stays: reply to the agent, let it call `report-task-status.py` on itself,
 then close the pane and wrap up -- that script's own sender validation
 enforces exactly that by refusing anyone but the live worker pane. This
