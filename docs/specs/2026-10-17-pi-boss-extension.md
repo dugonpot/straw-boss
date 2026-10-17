@@ -495,8 +495,9 @@ Defects the live check found that the fakes could not (each now has a test):
   pane keeps its old tab channel until `/reload`, and a run in progress keeps its
   old role text until the next run.
 - A tower TUI dashboard (registered sessions in the workspace, animated workspace
-  and subagent status via `ctx.ui.setWidget` and `requestRender`) is deferred to
-  v2, in its own file with its own size budget.
+  and subagent status via `ctx.ui.setWidget` and `requestRender`) was deferred to
+  v2, in its own file with its own size budget. It shipped in 0.2.0 as
+  `src/dashboard.ts`; see "v2 additions (2026-10-17)" below.
 
 ## Risks and open questions
 
@@ -507,3 +508,46 @@ Defects the live check found that the fakes could not (each now has a test):
 | Q3 | A pane moved between tabs keeps its old tab channel until `/reload`. | Accept; moves are rare and `/reload` fixes it. |
 | Q6 | A long run keeps its old role text until the next run starts. | Accept; role changes are rare and the TUI notice tells the human at once. |
 | Q7 | A fresh tower once tried an `intercom send` that carried a reply target, was rejected, and retried plainly (tower B's first answer; tower A's went through first time). | Accept; the prompt already says reply works only for asks. Tighten only if it recurs. |
+
+## v2 additions (2026-10-17, pi-straw-boss 0.2.0)
+
+User rules added after the first release, each with its test in the package.
+
+### Sub workspaces act like subagents (U15)
+
+"herdr worktree opens an independent workspace. That is a sub workspace, and a sub
+workspace is treated as a subagent: it must not overstep and must not get its own
+tower."
+
+| Item | Rule |
+|---|---|
+| Detection | `herdr workspace list` gives each workspace `worktree: {checkout_path, is_linked_worktree, repo_key, repo_name, repo_root}`. A workspace with `is_linked_worktree: true` is a sub workspace; its parent is the workspace with the same `repo_key` and `is_linked_worktree: false`. |
+| Sessions in it | Like workers (U12): no join reminder, no `boss_join`, `/boss` and `/boss tower` refused with the reason, no rejoin on resume, and only scope `all` reaches them. If Herdr cannot say whether the workspace is a sub workspace, the session is barred the same way and says why (fail fast, no guess). |
+| Tower | A sub workspace never has one. `call_tower` aimed at it (or issued from it) goes to the parent workspace's tower, opened there on demand; with no open parent workspace it fails with a clear error and opens nothing. |
+| Head tower | The tower of the first workspace in list order that is not a sub workspace. |
+| Dashboard | Listed under the parent as one line, not as a net. |
+
+### The tower tab is first, and recognised by its marker
+
+- Right after `tab create` (and when a tower adopts a leftover tower tab) the extension moves the tab to index 0 with Herdr's socket API, newline-delimited JSON on `$HERDR_SOCKET_PATH` (default `~/.config/herdr/herdr.sock`): `{"id":"..","method":"tab.move","params":{"tab_id":"..","insert_index":0}}` (`TabMoveParams`, protocol 22). It changes no focus and keeps the tab's `number`. A failed move is a warning notice, never fatal. The CLI has no tab move command.
+- The tab is identified by the `sb_role=tower` pane token (written right after `tab create`), not by the label `tower`: a pi-herdr-agents subagent named `tower` also creates a tab with that label in its "tab" and "grouped" pane modes. The label stays display only.
+
+### Tower dashboard
+
+Shown only in a tower session that holds the role and has a UI; read-only, never takes focus.
+
+| Part | Content |
+|---|---|
+| This net | Joined sessions of the tower's workspace by tab (main first, then members), each with its pi-herdr-agents subagents, then the workspace's sub workspaces. No sessions that did not join, nothing from other workspaces. |
+| Other towers | One summary line per workspace with a live tower: label, status, `head tower` mark. |
+| States | working = animated spinner (accent), waiting on a question = `?` (warning), idle = `○` (dim), done = `✓` (success), error = `✗` (error); colors from the active pi theme. The title mark is the most urgent state of the net. |
+| Cost | 8 fps spinner timer only while something works; 3 s data poll while the widget exists; intercom `presence_update`, `session_joined`, `session_left` poke an early re-read (at most every 0.5 s); `session_shutdown` or losing the role removes the widget and both timers. |
+
+Data sources: pi-intercom `listSessions()` (status, Herdr location), `herdr pane list`
+(`sb_role` token, `agent_status` where `blocked` means a question is open, the pi session
+file), `herdr workspace list`. A subagent is linked to its parent through pi-herdr-agents'
+layout: the parent's session file names `artifacts/<parent session id>/`, and
+`subagent-activity/<child id>.json` there is the child's activity record; the child's pane
+session file contains the child id (`PI_SUBAGENT_ID` is the same id). Subagents are grouped
+under that parent regardless of the tab or workspace their pane sits in (pi-herdr-agents'
+"grouped" mode picks a workspace by cwd), and they never count as a net member.
