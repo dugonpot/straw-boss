@@ -24,7 +24,7 @@
 
 ## 需求
 
-- Claude Code（plugins 要開）、支援 plugin 的 Codex CLI、Google Antigravity（AGY CLI），或裝了 [`pi-herdr-agents`](https://github.com/giuseppecrj/pi-herdr-agents) 的 Pi。
+- Claude Code（plugins 要開）、支援 plugin 的 Codex CLI、或 Google Antigravity（AGY CLI）。Pi 改由獨立套件提供，見 [Pi](#pi)。
 - Python 3，用來執行內附的生命週期與安裝腳本。
 - [Herdr](https://github.com/herdrdev/herdr)（委派必要需求）。Claude Code、Codex CLI 與 Antigravity worker 都在可查看、可加入的 Herdr pane 執行。安裝、讀取設定與整理已保存狀態可獨立執行；開始委派前須有可用的 Herdr 服務與目前 pane。
 
@@ -88,11 +88,13 @@ agy plugin install wayne930242/straw-boss
 
 ### Pi
 
+Pi 版 Straw Boss 已經搬出這個 repo，改成獨立的 extension [`pi-straw-boss`](https://github.com/wayne930242/pi-straw-boss)（[npm](https://www.npmjs.com/package/pi-straw-boss)）：
+
 ```bash
-pi install git:github.com/wayne930242/straw-boss
+pi install npm:pi-straw-boss
 ```
 
-Pi 只載入一個 skill：[boss-say](pi/skills/boss-say/SKILL.md)。它把工作依 app 分工、交辦給 `pi-herdr-agents` 派出的 Pi worker、替使用者收齊 worker 的問題，最後回報；不執行任何內附腳本，`skills/` 下 Claude Code、Codex 與 Antigravity 的 skill 不受影響。
+這個 repo 不再提供 Pi 套件。之前用 `pi install git:github.com/wayne930242/straw-boss` 裝過的話，先 `pi remove git:github.com/wayne930242/straw-boss`，再改裝 `pi-straw-boss`。extension 讀的是同一份 `.straw-boss/apps.json`。本 README 其餘內容都是 Claude Code、Codex 與 Antigravity 的說明。
 
 單一 app 的話 `init` 只是加分，裝好 plugin 就能直接用 `boss-say`。檢查 Herdr、設定 `forbidDirectCommit`/`localFiles` 這類選項、或設定 monorepo 多個 app，才需要跑。
 

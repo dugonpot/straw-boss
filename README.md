@@ -24,7 +24,7 @@ Bounded work should stay bounded. When a task benefits from its own workroom, st
 
 ## Requirements
 
-- Claude Code with plugins enabled, Codex CLI with plugin support, Google Antigravity (AGY CLI), or Pi with [`pi-herdr-agents`](https://github.com/giuseppecrj/pi-herdr-agents).
+- Claude Code with plugins enabled, Codex CLI with plugin support, or Google Antigravity (AGY CLI). Pi is served by a separate package; see [Pi](#pi).
 - Python 3 for the bundled lifecycle and installation scripts.
 - [Herdr](https://github.com/herdrdev/herdr), required for dispatch. Claude Code, Codex CLI, and Antigravity workers all run in a Herdr pane you can watch and join. Installing, reading configuration, and tidying persisted state all work on their own; starting a dispatch needs a running Herdr service and a current pane.
 
@@ -91,11 +91,13 @@ Then run once per project:
 
 ### Pi
 
+Straw Boss for Pi moved out of this repository into its own extension, [`pi-straw-boss`](https://github.com/wayne930242/pi-straw-boss) ([npm](https://www.npmjs.com/package/pi-straw-boss)):
+
 ```bash
-pi install git:github.com/wayne930242/straw-boss
+pi install npm:pi-straw-boss
 ```
 
-Pi loads one skill, [boss-say](pi/skills/boss-say/SKILL.md): it splits work across managed apps, briefs Pi workers launched through `pi-herdr-agents`, collects their questions for the user, and reports. It runs none of the bundled scripts, and the Claude Code, Codex, and Antigravity skills under `skills/` stay as they are.
+This repository no longer ships a Pi package. If you installed it with `pi install git:github.com/wayne930242/straw-boss`, run `pi remove git:github.com/wayne930242/straw-boss` and install `pi-straw-boss` instead. The extension reads the same `.straw-boss/apps.json`. Everything else in this README covers Claude Code, Codex, and Antigravity.
 
 For a single app, `init` is a bonus — `boss-say` works the moment the plugin's installed. Run it to check Herdr readiness, configure per-app options like `forbidDirectCommit`/`localFiles`, or a monorepo's apps configured.
 

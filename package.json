@@ -1,15 +1,7 @@
 {
   "name": "straw-boss",
-  "version": "0.32.3",
+  "version": "0.33.0",
   "private": true,
-  "description": "Straw Boss workflow for Pi: split work across managed apps, brief pi-herdr-agents workers, and report back.",
-  "license": "MIT",
-  "keywords": [
-    "pi-package"
-  ],
-  "pi": {
-    "skills": [
-      "./pi/skills/boss-say"
-    ]
-  }
+  "description": "Straw Boss for Claude Code, Codex, and Antigravity. On pi, use the pi-straw-boss package.",
+  "license": "MIT"
 }
