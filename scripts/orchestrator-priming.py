@@ -34,6 +34,7 @@ from pathlib import Path
 
 from straw_boss.dispatch.state import load_json, straw_boss_root
 from straw_boss.herdr.session import validate_current_process_in_pane
+from straw_boss.net import join_section
 from straw_boss.renewal import (
     adopt_renewed_session,
     claimable_record,
@@ -72,6 +73,16 @@ def orchestrator_stance() -> str:
     return text.strip()
 
 
+def main_agent_stance(payload: dict[str, object], session_id: object) -> str:
+    """The orchestrator stance, plus the Straw net section when this session joined the net."""
+    stance = orchestrator_stance()
+    kind = payload_agent_kind(payload)
+    if not session_id or kind == "agy":
+        return stance
+    net_section = join_section(str(session_id), kind)
+    return stance if net_section is None else f"{stance}\n\n{net_section}"
+
+
 def renewal_priming(payload: dict[str, object], session_id: str) -> str | None:
     """Continue a session renewed in this pane, primed for its recorded role."""
     agent_kind = payload_agent_kind(payload)
@@ -97,7 +108,7 @@ def renewal_priming(payload: dict[str, object], session_id: str) -> str | None:
         + adoption,
     ]
     if role == "main-agent":
-        sections.append(orchestrator_stance())
+        sections.append(main_agent_stance(payload, session_id))
     elif role == "dispatched-worker":
         for instruction_path in record.get("instruction_paths", []):
             try:
@@ -125,7 +136,7 @@ def priming_text(payload: dict[str, object]) -> str | None:
                 return None
             contract_path = Path(str(instruction.get("contract_path", "")))
             return contract_path.read_text().strip() if contract_path.is_file() else None
-    return orchestrator_stance()
+    return main_agent_stance(payload, session_id)
 
 
 def main() -> int:
