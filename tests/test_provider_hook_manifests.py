@@ -1,6 +1,7 @@
 """Provider hook discovery must preserve commands and Claude function modules."""
 import json
 import os
+import runpy
 from pathlib import Path
 import subprocess
 import tempfile
@@ -15,6 +16,13 @@ def codex_hooks():
 
 
 class ProviderHookManifestsTest(unittest.TestCase):
+    def test_windows_commands_match_readable_generator(self):
+        generator = runpy.run_path(str(ROOT / 'scripts/sync-codex-windows-hooks.py'))
+        hooks = [hook for entries in codex_hooks()['hooks'].values()
+                 for entry in entries for hook in entry['hooks']]
+        for hook, name in zip(hooks, generator['SCRIPTS'], strict=True):
+            self.assertEqual(hook['commandWindows'], generator['windows_command'](name))
+
     def test_codex_discovered_file_uses_supported_top_level_fields(self):
         # Codex 0.155.1 rejects the entire file on unknown fields, including modules.
         payload = codex_hooks()
@@ -100,6 +108,28 @@ class ProviderHookManifestsTest(unittest.TestCase):
                         self.assertEqual(result.returncode, 0, result.stderr)
                         self.assertIn('hook skipped', json.loads(result.stdout)['systemMessage'])
 
+    @unittest.skipUnless(os.name == 'nt', 'native PowerShell parent shell')
+    def test_windows_overrides_survive_powershell_parent(self):
+        with tempfile.TemporaryDirectory(prefix='installed plugin ') as directory:
+            root = Path(directory)
+            (root / 'scripts').mkdir()
+            for name in ['orchestrator-priming.py', 'dispatched-agent-stop-guard.py',
+                         'context-renewal-guard.py']:
+                (root / 'scripts' / name).write_text(
+                    'import sys\nprint(sys.stdin.read())\nsys.exit(2)\n')
+            env = {**os.environ, 'CLAUDE_PLUGIN_ROOT': directory}
+            for entries in codex_hooks()['hooks'].values():
+                for entry in entries:
+                    for hook in entry['hooks']:
+                        result = subprocess.run(
+                            ['powershell.exe', '-NoProfile', '-NonInteractive', '-Command',
+                             hook['commandWindows']], input='{"marker":"outer shell"}',
+                            text=True, capture_output=True, env=env, timeout=30)
+                        # PowerShell's outer -Command normalizes native failures
+                        # to 1; the override must still run and preserve its output.
+                        self.assertNotEqual(result.returncode, 0, result.stderr)
+                        self.assertEqual(json.loads(result.stdout), {'marker': 'outer shell'})
+
     @unittest.skipUnless(os.name == 'nt', 'native Windows real guard integration')
     def test_windows_real_guards_accept_codex_rollout(self):
         with tempfile.TemporaryDirectory(prefix='hook home ') as directory:
@@ -124,3 +154,14 @@ class ProviderHookManifestsTest(unittest.TestCase):
                             self.assertEqual(result.stdout, '')
                         else:
                             self.assertIn('main agent', result.stdout)
+            # Current Stop guards block through JSON with exit 0. Check that
+            # the PowerShell parent preserves this safety decision as well.
+            transcript.write_text(json.dumps({'type': 'event_msg', 'payload': {
+                'type': 'token_count', 'info': {'last_token_usage': {
+                    'input_tokens': 220001, 'output_tokens': 5, 'total_tokens': 220006}}}}) + '\n')
+            hook = codex_hooks()['hooks']['Stop'][0]['hooks'][1]
+            result = subprocess.run(
+                ['powershell.exe', '-NoProfile', '-NonInteractive', '-Command', hook['commandWindows']],
+                input=payload, text=True, capture_output=True, env=env, cwd=directory, timeout=30)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout)['decision'], 'block')
