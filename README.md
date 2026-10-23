@@ -99,6 +99,10 @@ pi install npm:pi-straw-boss
 
 This repository no longer ships a Pi package. If you installed it with `pi install git:github.com/wayne930242/straw-boss`, run `pi remove git:github.com/wayne930242/straw-boss` and install `pi-straw-boss` instead. The extension reads the same `.straw-boss/apps.json`. Everything else in this README covers Claude Code, Codex, and Antigravity.
 
+#### With pi-straw-boss
+
+When a release of `pi-straw-boss` that has the net CLI is installed (with `pi-intercom`), a Claude Code or Codex main-agent session started in a Herdr pane joins the same straw net as pi sessions. The SessionStart hook starts one small sidecar process per pane, so the session shows in the Straw Boss GUI, the tower dashboard, and the sidebar. It also receives `boss_broadcast` messages as `[straw net …]` lines in its pane. The session becomes its tab's main when it registers with `register-orchestrator.py --scope …`, and it can call the tower with `scripts/straw-net.py call-tower --message …`, broadcast, or reply to a net message with `send`. Dispatched workers and coworkers stay outside the net, no dispatch script changes, and without Herdr or `pi-straw-boss` the hook starts nothing. Set `STRAW_BOSS_PI_PACKAGE` to use a checkout instead of the installed package.
+
 For a single app, `init` is a bonus — `boss-say` works the moment the plugin's installed. Run it to check Herdr readiness, configure per-app options like `forbidDirectCommit`/`localFiles`, or a monorepo's apps configured.
 
 ## Usage

@@ -231,6 +231,48 @@ class StrawNetTests(DispatchedAgentLifecycleFixture, unittest.TestCase):
         self.assertEqual(net.find_package(env), found)
         self.assertIsNone(net.find_package({"PI_CODING_AGENT_DIR": str(self.home / "none")}))
 
+    # --- the agent-facing wrapper ---
+
+    def run_wrapper(self, *args: str, **extra: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            [sys.executable, str(SCRIPTS / "straw-net.py"), *args],
+            cwd=ROOT,
+            env=self.env(**extra),
+            capture_output=True,
+            text=True,
+            timeout=20,
+        )
+
+    def test_wrapper_runs_the_cli_and_passes_the_exit_code_through(self) -> None:
+        for code in (0, 1, 2):
+            if self.out.exists():
+                self.out.unlink()
+            result = self.run_wrapper("call-tower", "--message", "hello there", FAKE_NODE_EXIT=str(code))
+            self.assertEqual(result.returncode, code, result.stderr)
+            argv = self.spawned()
+            assert argv is not None
+            self.assertEqual(argv[0], "--import")
+            self.assertEqual(argv[2], str(self.package / "src" / "agent" / "cli.ts"))
+            self.assertEqual(argv[3:6], ["call-tower", "--message", "hello there"])
+
+    def test_wrapper_without_the_package_says_so_and_exits_2(self) -> None:
+        result = self.run_wrapper("status", STRAW_BOSS_PI_PACKAGE=str(self.home / "absent"))
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("pi-straw-boss", result.stderr)
+        self.assertIn("STRAW_BOSS_PI_PACKAGE", result.stderr)
+        self.assertFalse(self.out.exists())
+
+    def test_wrapper_without_the_tsx_loader_says_so_and_exits_2(self) -> None:
+        self.loader.unlink()
+        result = self.run_wrapper("status")
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("tsx", result.stderr)
+
+    def test_wrapper_usage_error_exits_2(self) -> None:
+        result = self.run_wrapper()
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("usage", result.stderr)
+
 
 class RecordPathAgreement(unittest.TestCase):
     def test_join_record_matches_the_orchestrator_directory(self) -> None:

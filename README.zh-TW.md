@@ -96,6 +96,10 @@ pi install npm:pi-straw-boss
 
 這個 repo 不再提供 Pi 套件。之前用 `pi install git:github.com/wayne930242/straw-boss` 裝過的話，先 `pi remove git:github.com/wayne930242/straw-boss`，再改裝 `pi-straw-boss`。extension 讀的是同一份 `.straw-boss/apps.json`。本 README 其餘內容都是 Claude Code、Codex 與 Antigravity 的說明。
 
+#### 搭配 pi-straw-boss
+
+裝了含 net CLI 的 `pi-straw-boss`（並有 `pi-intercom`）之後，在 Herdr pane 裡啟動的 Claude Code 或 Codex 主 agent session 會加入跟 pi 同一張 straw net。SessionStart hook 為每個 pane 啟動一個小的 sidecar 行程，session 因此會出現在 Straw Boss GUI、tower dashboard 和 sidebar，也會在 pane 裡以 `[straw net …]` 開頭的一行收到 `boss_broadcast` 訊息。用 `register-orchestrator.py --scope …` 登記後，它會成為所在分頁的 main；可以用 `scripts/straw-net.py call-tower --message …` 呼叫 tower、廣播，或用 `send` 回覆收到的訊息。派工出去的 worker 與 coworker 不加入，派工腳本沒有任何改動；沒有 Herdr 或 `pi-straw-boss` 時 hook 什麼都不啟動。想用 checkout 而不是已安裝的套件，設 `STRAW_BOSS_PI_PACKAGE`。
+
 單一 app 的話 `init` 只是加分，裝好 plugin 就能直接用 `boss-say`。檢查 Herdr、設定 `forbidDirectCommit`/`localFiles` 這類選項、或設定 monorepo 多個 app，才需要跑。
 
 ## 怎麼用
