@@ -46,9 +46,9 @@ fixture isolation and opt-in Jev filesystem portability need separate work.
 
 The installed 0.33.0 cache is unchanged. Version 0.33.1 in the source manifests
 identifies this proposed release; publishing a PR does not deploy it to existing
-sessions. Actual dispatched-worker completion and subsequent coordinator
-handoff must still be exercised with the repaired version loaded before claiming
-end-to-end recovery.
+sessions. Formal Herdr dispatch completion and subsequent coordinator
+notification must still be exercised from an authenticated Herdr session before
+claiming that transport has recovered.
 
 Initial CLI attempts exited successfully without callback markers and did not
 establish hook execution. A subsequent native Codex app-server 0.163.0 run used
@@ -58,5 +58,18 @@ three code-1 hook failures with the original nested `-Command` wrapper.
 After switching to `-EncodedCommand`, that same run emitted successful
 `hook/completed` events for SessionStart and both Stop guards, with three
 independent callback markers identifying the actual guard scripts. The turn
-completed successfully. This verifies native runner execution; it does not
-yet establish dispatched-worker terminal reporting and coordinator handoff.
+completed successfully. This verifies native runner execution.
+
+A further native app-server UAT started two real standalone Codex workers in
+sequence with the repaired hook definitions and an isolated runtime and working
+directory. Each used the original `report-task-status.py --plan ... --task ...`
+interface to write its own `done` status. The coordinating harness read the first
+durable status and verified its artifact before starting the dependent worker.
+That worker read the first artifact, produced the expected derived artifact,
+and reported `done`. Both artifacts and both statuses were read back and
+verified; all six hook invocations completed successfully. This establishes
+real worker execution, durable completion polling, and dependent artifact
+handoff. It does not establish Herdr live notification: the current execution
+environment lacks inherited Herdr pane identity, so no Herdr dispatch was
+created and no identity check was bypassed. The source coordinator's production
+dispatches and installed plugin cache were not used for these UAT runs.
