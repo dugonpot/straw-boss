@@ -4,7 +4,6 @@ Design: docs/specs/2026-09-21-codex-renewal-usage-records/design.md.
 """
 from __future__ import annotations
 
-import fcntl
 import json
 import os
 from pathlib import Path
@@ -12,6 +11,7 @@ from typing import Any
 
 from . import jev_renewal
 from . import renewal
+from .file_lock import lock_exclusive
 from .jev_private import private_read, root as jev_root
 
 
@@ -28,7 +28,7 @@ def append(entry: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     lock_path = _lock_path()
     with lock_path.open("a") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+        lock_exclusive(lock)
         with path.open("a") as file:
             file.write(json.dumps(entry, ensure_ascii=False) + "\n")
             file.flush()

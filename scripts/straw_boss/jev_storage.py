@@ -1,7 +1,6 @@
 """Private recovery snapshots and one benchmark row per compaction attempt."""
 from __future__ import annotations
 
-import fcntl
 import hashlib
 import json
 import os
@@ -10,6 +9,7 @@ from contextlib import contextmanager
 from pathlib import Path
 
 from .jev_private import private_file, private_read, private_replace, private_unlink, root
+from .file_lock import lock_exclusive
 
 
 def canonical(value: object) -> bytes:
@@ -40,7 +40,7 @@ def private_write(path: Path, data: dict) -> None:
 @contextmanager
 def benchmark_lock():
     with private_file(root() / "benchmark.lock", os.O_WRONLY | os.O_CREAT, "w") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
+        lock_exclusive(lock)
         yield
 
 
